@@ -3,34 +3,43 @@ name: DevOps Pipeline
 on:
   push:
     branches:
-      - main
+      - main  # Trigger pipeline on push to main branch
 
 jobs:
   build_image_and_push_into_dockerhub:
-    name: build image and push into dockerhub
-    runs-on: [self-hosted, s8]
+    name: Build Image and Push to DockerHub
+    runs-on: [self-hosted, repo-build]
     steps:
+      # ------------------ Checkout Repository ------------------
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Testing the Code
+      # ------------------ Testing the Code ------------------
+      - name: List Repository Contents
         run: |
           pwd
           ls
 
-      - name: Build Docker Image from s9/app01 using api.Dockerfile
+      # ------------------ Build Docker Images ------------------
+      - name: Build Docker Images from s9/app01
         run: |
           cd s9/app01
-          sudo docker build -f api.Dockerfile -t devopseasylearning/s9-api:latest .
-          sudo docker build -f db.Dockerfile -t devopseasylearning/s9-db:latest .
-          sudo docker build -f frontend.Dockerfile -t devopseasylearning/s9-frontend:latest .
+          echo "Building API image..."
+          sudo docker build -f api.Dockerfile -t bulawes/s9-api:latest .
+          echo "Building DB image..."
+          sudo docker build -f db.Dockerfile -t bulawes/s9-db:latest .
+          echo "Building Frontend image..."
+          sudo docker build -f frontend.Dockerfile -t bulawes/s9-frontend:latest .
+          echo "Listing built images..."
           sudo docker images
 
+      # ------------------ Login to DockerHub ------------------
       - name: Login to DockerHub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
 
-      - name: Push Docker Image
+      # ------------------ Push Docker Images ------------------
+      - name: Push Docker Images to DockerHub
         run: |
-          docker push devopseasylearning/s9-api:latest
-          docker push devopseasylearning/s9-frontend:latest
-          docker push devopseasylearning/s9-db:latest
+          docker push bulawes/s9-api:latest
+          docker push bulawes/s9-frontend:latest
+          docker push bulawes/s9-db:latest
