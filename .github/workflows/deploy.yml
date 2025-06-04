@@ -22,11 +22,11 @@ jobs:
         run: |
           cd s9/app01
           echo "Building API image..."
-          sudo docker build -f api.Dockerfile -t bulawes/s9-api:latest .
+          sudo docker build -f api.Dockerfile -t bulawesley/s9-api:latest .
           echo "Building DB image..."
-          sudo docker build -f db.Dockerfile -t bulawes/s9-db:latest .
+          sudo docker build -f db.Dockerfile -t bulawesley/s9-db:latest .
           echo "Building Frontend image..."
-          sudo docker build -f frontend.Dockerfile -t bulawes/s9-frontend:latest .
+          sudo docker build -f frontend.Dockerfile -t bulawesley/s9-frontend:latest .
           echo "Listing built images..."
           sudo docker images
 
@@ -35,7 +35,16 @@ jobs:
 
       - name: Push Docker Images to DockerHub
         run: |
-          docker push bulawes/s9-api:latest
-          docker push bulawes/s9-frontend:latest
-          docker push bulawes/s9-db:latest
+          docker push bulawesley/s9-api:latest
+          docker push bulawesley/s9-frontend:latest
+          docker push bulawesley/s9-db:latest
 
+      - name: Get Public IP of GitHub Actions Agent VM
+        run: |
+          echo "Retrieving public IP of VM 'github-actions-agent' in zone 'us-central1-c'..."
+          VM_IP=$(gcloud compute instances describe github-actions-agent \
+            --zone=us-central1-c \
+            --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+          echo "✅ Application should be accessible at: http://$VM_IP:8080"
+          echo "Sleeping for 5 minutes to allow testing..."
+          sleep 300
