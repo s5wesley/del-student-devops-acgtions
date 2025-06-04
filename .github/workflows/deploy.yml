@@ -39,6 +39,12 @@ jobs:
           docker push bulawesley/s9-frontend:latest
           docker push bulawesley/s9-db:latest
 
+      - name: Authenticate with Google Cloud
+        run: |
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > key.json
+          gcloud auth activate-service-account --key-file=key.json
+          gcloud config set project silken-period-452805-a7
+
       - name: Get Public IP of GitHub Actions Agent VM
         run: |
           echo "Retrieving public IP of VM 'github-actions-agent' in zone 'us-central1-c'..."
@@ -48,3 +54,7 @@ jobs:
           echo "✅ Application should be accessible at: http://$VM_IP:8080"
           echo "Sleeping for 5 minutes to allow testing..."
           sleep 300
+
+      - name: Clean Up GCP Key
+        if: always()
+        run: rm -f key.json
