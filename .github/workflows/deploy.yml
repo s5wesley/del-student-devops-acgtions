@@ -1,0 +1,41 @@
+name: DevOps Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_image_and_push_into_dockerhub:
+    name: Build Image and Push to DockerHub
+    runs-on: [self-hosted, repo-deploy]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: List Repository Contents
+        run: |
+          pwd
+          ls
+
+      - name: Build Docker Images from s9/app01
+        run: |
+          cd s9/app01
+          echo "Building API image..."
+          sudo docker build -f api.Dockerfile -t bulawes/s9-api:latest .
+          echo "Building DB image..."
+          sudo docker build -f db.Dockerfile -t bulawes/s9-db:latest .
+          echo "Building Frontend image..."
+          sudo docker build -f frontend.Dockerfile -t bulawes/s9-frontend:latest .
+          echo "Listing built images..."
+          sudo docker images
+
+      - name: Login to DockerHub
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ vars.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Push Docker Images to DockerHub
+        run: |
+          docker push bulawes/s9-api:latest
+          docker push bulawes/s9-frontend:latest
+          docker push bulawes/s9-db:latest
+
